@@ -34,6 +34,7 @@ function addTask() {
 function displayTasks() {
   const taskList = document.getElementById("taskList");
   taskList.innerHTML = "";
+
   tasks.forEach((task, index) => {
     const li = document.createElement("li");
     li.innerHTML = `${task.name} - ${new Date(task.time).toLocaleString()}
@@ -77,13 +78,14 @@ function setNotification(task) {
 
 // Voice recognition setup (continuous listening)
 let recognition;
+let voiceErrorCount = 0; // Track errors to stop after two attempts
 function startVoiceCommand() {
   if (!recognition) {
     recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
-    recognition.continuous = true; // Keep listening indefinitely
-    recognition.interimResults = false; // Process complete speech
+    recognition.continuous = true;
+    recognition.interimResults = false;
   }
 
   recognition.start();
@@ -96,8 +98,15 @@ function startVoiceCommand() {
 
   recognition.onerror = (event) => {
     console.error("Voice recognition error:", event);
-    speakResponse("I didn't catch that. Can you repeat?");
-    recognition.start(); // Restart listening
+
+    // Stop after two failed attempts
+    if (voiceErrorCount < 2) {
+      speakResponse("I didn't catch that. Can you repeat?");
+      voiceErrorCount++;
+    } else {
+      speakResponse("Voice command disabled. Try again later.");
+      recognition.stop(); // Stop recognition
+    }
   };
 }
 
@@ -118,10 +127,8 @@ function processVoiceCommand(command) {
   } else if (command.includes("update task")) {
     updateTaskByName(command);
   } else {
-    speakResponse("I didn't understand. Please try again.");
+    speakResponse("Aime Please try again.");
   }
-
-  recognition.start(); // Keep listening after processing
 }
 
 // Add a task via voice
@@ -159,6 +166,7 @@ function deleteTaskByName(command) {
   const taskIndex = tasks.findIndex(
     (task) => task.name.toLowerCase() === taskName.toLowerCase()
   );
+
   if (taskIndex !== -1) {
     tasks.splice(taskIndex, 1);
     saveTasks();
@@ -175,9 +183,11 @@ function updateTaskByName(command) {
   const taskIndex = tasks.findIndex(
     (task) => task.name.toLowerCase() === taskName.toLowerCase()
   );
+
   if (taskIndex !== -1) {
     const newTaskName = prompt("Enter the new task name:");
     const newTaskTime = prompt("Enter the new deadline (yyyy-mm-ddTHH:MM:SS):");
+
     if (newTaskName && newTaskTime) {
       tasks[taskIndex] = {
         name: newTaskName,
