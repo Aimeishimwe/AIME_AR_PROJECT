@@ -9,17 +9,14 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- AR Scene Setup with Markerless AR -->
-    <a-scene
-      embedded
-      arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
-    >
+    <!-- AR Scene Setup -->
+    <a-scene embedded arjs>
       <!-- Camera Setup for AR -->
       <a-entity camera></a-entity>
 
       <!-- Floating Cube -->
       <a-box
-        position="0 0.5 2"
+        position="0 1.5 2"
         color="#4CC3D9"
         event-set__click="color: #FF0000; scale: 1.5 1.5 1.5"
         shadow="cast: true; receive: true"
@@ -27,7 +24,7 @@
 
       <!-- Floating UI Panel -->
       <a-plane
-        position="0 1.5 -3"
+        position="0 2 -3"
         rotation="-90 0 0"
         width="2"
         height="1"
@@ -76,8 +73,6 @@
           align="center"
         ></a-text>
       </a-plane>
-
-      <!-- Add more UI elements as needed -->
     </a-scene>
   </body>
 </html>
