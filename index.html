@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Floating UI</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- AR Scene Setup -->
+    <a-scene embedded arjs>
+      <!-- Camera Setup for AR -->
+      <a-entity camera></a-entity>
+
+      <!-- Floating Cube -->
+      <a-box
+        position="0 0.5 2"
+        color="#4CC3D9"
+        event-set__click="color: #FF0000; scale: 1.5 1.5 1.5"
+        shadow="cast: true; receive: true"
+      ></a-box>
+
+      <!-- Floating UI Panel -->
+      <a-plane
+        position="0 1.5 -3"
+        rotation="-90 0 0"
+        width="2"
+        height="1"
+        color="#FF6347"
+        opacity="0.8"
+      >
+        <!-- UI Text -->
+        <a-text
+          value="AR Interface"
+          position="0 0.35 0"
+          color="#FFF"
+          align="center"
+        ></a-text>
+
+        <!-- Interactive Button -->
+        <a-box
+          position="-0.6 0 -0.3"
+          color="#32CD32"
+          depth="0.2"
+          width="0.5"
+          height="0.3"
+          event-set__click="color: #FF4500; scale: 1.2 1.2 1.2"
+        ></a-box>
+
+        <a-text
+          value="Button 1"
+          position="-0.6 0.15 -0.3"
+          color="#FFF"
+          align="center"
+        ></a-text>
+
+        <!-- Another Button -->
+        <a-box
+          position="0.6 0 -0.3"
+          color="#32CD32"
+          depth="0.2"
+          width="0.5"
+          height="0.3"
+          event-set__click="color: #FF4500; scale: 1.2 1.2 1.2"
+        ></a-box>
+
+        <a-text
+          value="Button 2"
+          position="0.6 0.15 -0.3"
+          color="#FFF"
+          align="center"
+        ></a-text>
+      </a-plane>
+
+      <!-- Add more UI elements as needed -->
+    </a-scene>
+  </body>
+</html>
