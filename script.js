@@ -7,6 +7,18 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("startVoiceBtn")
     .addEventListener("click", startVoiceCommand);
 
+  // Check if service worker is supported and register it
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(() => {
+        console.log("Service Worker registered");
+      })
+      .catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
+  }
+
   greetUser();
   displayTasks();
 });
@@ -57,7 +69,8 @@ function displayTasks() {
     const li = document.createElement("li");
     li.innerHTML = `${task.name} - ${new Date(task.time).toLocaleString()}
                         <button onclick="deleteTask(${index})">❌</button>
-                        <button onclick="updateTask(${index})">📝</button>`;
+                        <button onclick="updateTask(${index})">📝</button>
+                        <button onclick="completeTask(${index})">✔️ Done</button>`;
     taskList.appendChild(li);
   });
 }
@@ -68,6 +81,14 @@ function deleteTask(index) {
   saveTasks();
   displayTasks();
   speakResponse("Task deleted.");
+}
+
+// Mark a task as complete
+function completeTask(index) {
+  tasks.splice(index, 1);
+  saveTasks();
+  displayTasks();
+  speakResponse("Task completed and removed.");
 }
 
 // Update a task
@@ -88,6 +109,20 @@ function setNotification(task) {
   const delay = task.time - new Date().getTime();
   if (delay > 0) {
     setTimeout(() => {
+      // Show push notification
+      if (
+        "serviceWorker" in navigator &&
+        Notification.permission === "granted"
+      ) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification("Task Reminder", {
+            body: `${task.name} is due now!`,
+            icon: "icon.png",
+          });
+        });
+      }
+
+      // Alert and voice reminder
       speakResponse(`Reminder: ${task.name} is due now!`);
       alert(`Reminder: ${task.name} is due now!`);
     }, delay);
