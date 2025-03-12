@@ -9,8 +9,11 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- AR Scene Setup -->
-    <a-scene embedded arjs>
+    <!-- AR Scene Setup with Markerless AR -->
+    <a-scene
+      embedded
+      arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
+    >
       <!-- Camera Setup for AR -->
       <a-entity camera></a-entity>
 
