@@ -1,16 +1,18 @@
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 document.addEventListener("DOMContentLoaded", function () {
+  greetUser(); // Moved greetUser() to inside DOMContentLoaded
   if (!tasks.length) {
     speakResponse("Hello Aime! No tasks found. Please add some tasks.");
   } else {
     displayTasks();
   }
-  greetUser();
 });
 
 function greetUser() {
-  speakResponse("Hello Aime, welcome back!");
+  window.onload = () => {
+    speakResponse("Hello Aime, welcome back!");
+  };
 }
 
 function addTask() {
