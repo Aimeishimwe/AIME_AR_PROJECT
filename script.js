@@ -1,16 +1,18 @@
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 document.addEventListener("DOMContentLoaded", function () {
-  greetUser(); // Say hello when the app loads
+  greetUser();
   displayTasks();
 });
 
+// Greet the user when the app loads
 function greetUser() {
   setTimeout(() => {
     speakResponse("Hello Aime, welcome back!");
-  }, 1000); // Adding delay to ensure voice synthesis initializes properly
+  }, 1000);
 }
 
+// Add a task to the list
 function addTask() {
   const taskName = document.getElementById("taskName").value;
   const taskTime = document.getElementById("taskTime").value;
@@ -28,6 +30,7 @@ function addTask() {
   speakResponse(`Task ${taskName} added!`);
 }
 
+// Display all tasks
 function displayTasks() {
   const taskList = document.getElementById("taskList");
   taskList.innerHTML = "";
@@ -40,6 +43,7 @@ function displayTasks() {
   });
 }
 
+// Delete a task
 function deleteTask(index) {
   tasks.splice(index, 1);
   saveTasks();
@@ -47,6 +51,7 @@ function deleteTask(index) {
   speakResponse("Task deleted.");
 }
 
+// Update a task
 function updateTask(index) {
   const newTaskName = prompt("Enter the new task name:");
   const newTaskTime = prompt("Enter the new deadline (yyyy-mm-ddTHH:MM:SS):");
@@ -59,6 +64,7 @@ function updateTask(index) {
   }
 }
 
+// Set a notification for the task
 function setNotification(task) {
   const delay = task.time - new Date().getTime();
   if (delay > 0) {
@@ -69,22 +75,36 @@ function setNotification(task) {
   }
 }
 
-// Voice recognition (NOT running automatically on page load)
+// Voice recognition setup (continuous listening)
+let recognition;
 function startVoiceCommand() {
-  const recognition = new (window.SpeechRecognition ||
-    window.webkitSpeechRecognition)();
-  recognition.lang = "en-US";
+  if (!recognition) {
+    recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.continuous = true; // Keep listening indefinitely
+    recognition.interimResults = false; // Process complete speech
+  }
+
   recognition.start();
 
   recognition.onresult = (event) => {
-    const command = event.results[0][0].transcript.toLowerCase();
+    const command =
+      event.results[event.results.length - 1][0].transcript.toLowerCase();
     processVoiceCommand(command);
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Voice recognition error:", event);
+    speakResponse("I didn't catch that. Can you repeat?");
+    recognition.start(); // Restart listening
   };
 }
 
+// Process commands from voice input
 function processVoiceCommand(command) {
   if (command.includes("add task")) {
-    const taskName = command.split("add task ")[1];
+    const taskName = command.replace("add task", "").trim();
     const taskTime = prompt(
       "Please provide the task deadline in format yyyy-mm-ddTHH:MM:SS:"
     );
@@ -98,10 +118,13 @@ function processVoiceCommand(command) {
   } else if (command.includes("update task")) {
     updateTaskByName(command);
   } else {
-    speakResponse("Sorry, I couldn't understand your command.");
+    speakResponse("I didn't understand. Please try again.");
   }
+
+  recognition.start(); // Keep listening after processing
 }
 
+// Add a task via voice
 function addVoiceTask(taskName, taskTime) {
   const task = { name: taskName, time: new Date(taskTime).getTime() };
   tasks.push(task);
@@ -115,6 +138,7 @@ function addVoiceTask(taskName, taskTime) {
   );
 }
 
+// Get the next scheduled task
 function getNextTask() {
   if (tasks.length > 0) {
     tasks.sort((a, b) => a.time - b.time);
@@ -129,8 +153,9 @@ function getNextTask() {
   }
 }
 
+// Delete a task by name
 function deleteTaskByName(command) {
-  const taskName = command.split("delete task ")[1];
+  const taskName = command.replace("delete task", "").trim();
   const taskIndex = tasks.findIndex(
     (task) => task.name.toLowerCase() === taskName.toLowerCase()
   );
@@ -144,8 +169,9 @@ function deleteTaskByName(command) {
   }
 }
 
+// Update a task by name
 function updateTaskByName(command) {
-  const taskName = command.split("update task ")[1];
+  const taskName = command.replace("update task", "").trim();
   const taskIndex = tasks.findIndex(
     (task) => task.name.toLowerCase() === taskName.toLowerCase()
   );
@@ -166,10 +192,12 @@ function updateTaskByName(command) {
   }
 }
 
+// Save tasks to local storage
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+// Text-to-speech function
 function speakResponse(responseText) {
   const speech = new SpeechSynthesisUtterance(responseText);
   window.speechSynthesis.speak(speech);
