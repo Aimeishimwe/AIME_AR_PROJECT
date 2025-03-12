@@ -1,18 +1,14 @@
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 document.addEventListener("DOMContentLoaded", function () {
-  greetUser(); // Moved greetUser() to inside DOMContentLoaded
-  if (!tasks.length) {
-    speakResponse("Hello Aime! No tasks found. Please add some tasks.");
-  } else {
-    displayTasks();
-  }
+  greetUser(); // Say hello when the app loads
+  displayTasks();
 });
 
 function greetUser() {
-  window.onload = () => {
+  setTimeout(() => {
     speakResponse("Hello Aime, welcome back!");
-  };
+  }, 1000); // Adding delay to ensure voice synthesis initializes properly
 }
 
 function addTask() {
@@ -73,7 +69,7 @@ function setNotification(task) {
   }
 }
 
-// Voice recognition
+// Voice recognition (NOT running automatically on page load)
 function startVoiceCommand() {
   const recognition = new (window.SpeechRecognition ||
     window.webkitSpeechRecognition)();
