@@ -1,6 +1,12 @@
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Ensure inputs and buttons work after page loads
+  document.getElementById("addTaskBtn").addEventListener("click", addTask);
+  document
+    .getElementById("startVoiceBtn")
+    .addEventListener("click", startVoiceCommand);
+
   greetUser();
   displayTasks();
 });
@@ -14,8 +20,16 @@ function greetUser() {
 
 // Add a task to the list
 function addTask() {
-  const taskName = document.getElementById("taskName").value;
-  const taskTime = document.getElementById("taskTime").value;
+  const taskNameInput = document.getElementById("taskName");
+  const taskTimeInput = document.getElementById("taskTime");
+
+  if (!taskNameInput || !taskTimeInput) {
+    alert("Error: Input fields not found.");
+    return;
+  }
+
+  const taskName = taskNameInput.value.trim();
+  const taskTime = taskTimeInput.value.trim();
 
   if (!taskName || !taskTime) {
     alert("Please enter a task and time!");
@@ -28,6 +42,10 @@ function addTask() {
   displayTasks();
   setNotification(task);
   speakResponse(`Task ${taskName} added!`);
+
+  // Clear input fields after adding a task
+  taskNameInput.value = "";
+  taskTimeInput.value = "";
 }
 
 // Display all tasks
@@ -76,37 +94,27 @@ function setNotification(task) {
   }
 }
 
-// Voice recognition setup (continuous listening)
+// Voice recognition setup (Fixing for Mobile)
 let recognition;
-let voiceErrorCount = 0; // Track errors to stop after two attempts
 function startVoiceCommand() {
   if (!recognition) {
     recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
-    recognition.continuous = true;
+    recognition.continuous = false; // Change to false for mobile support
     recognition.interimResults = false;
   }
 
   recognition.start();
 
   recognition.onresult = (event) => {
-    const command =
-      event.results[event.results.length - 1][0].transcript.toLowerCase();
+    const command = event.results[0][0].transcript.toLowerCase();
     processVoiceCommand(command);
   };
 
   recognition.onerror = (event) => {
     console.error("Voice recognition error:", event);
-
-    // Stop after two failed attempts
-    if (voiceErrorCount < 2) {
-      speakResponse("I didn't catch that. Can you repeat?");
-      voiceErrorCount++;
-    } else {
-      speakResponse("Voice command disabled. Try again later.");
-      recognition.stop(); // Stop recognition
-    }
+    speakResponse("I didn't catch that. Can you repeat?");
   };
 }
 
@@ -127,7 +135,7 @@ function processVoiceCommand(command) {
   } else if (command.includes("update task")) {
     updateTaskByName(command);
   } else {
-    speakResponse("Aime Please try again.");
+    speakResponse("I didn't understand. Please try again.");
   }
 }
 
@@ -143,63 +151,6 @@ function addVoiceTask(taskName, taskTime) {
       task.time
     ).toLocaleString()}`
   );
-}
-
-// Get the next scheduled task
-function getNextTask() {
-  if (tasks.length > 0) {
-    tasks.sort((a, b) => a.time - b.time);
-    const nextTask = tasks[0];
-    speakResponse(
-      `Your next task is: ${nextTask.name}, scheduled at ${new Date(
-        nextTask.time
-      ).toLocaleString()}`
-    );
-  } else {
-    speakResponse("You have no tasks in your schedule.");
-  }
-}
-
-// Delete a task by name
-function deleteTaskByName(command) {
-  const taskName = command.replace("delete task", "").trim();
-  const taskIndex = tasks.findIndex(
-    (task) => task.name.toLowerCase() === taskName.toLowerCase()
-  );
-
-  if (taskIndex !== -1) {
-    tasks.splice(taskIndex, 1);
-    saveTasks();
-    displayTasks();
-    speakResponse(`Task ${taskName} deleted.`);
-  } else {
-    speakResponse("Task not found.");
-  }
-}
-
-// Update a task by name
-function updateTaskByName(command) {
-  const taskName = command.replace("update task", "").trim();
-  const taskIndex = tasks.findIndex(
-    (task) => task.name.toLowerCase() === taskName.toLowerCase()
-  );
-
-  if (taskIndex !== -1) {
-    const newTaskName = prompt("Enter the new task name:");
-    const newTaskTime = prompt("Enter the new deadline (yyyy-mm-ddTHH:MM:SS):");
-
-    if (newTaskName && newTaskTime) {
-      tasks[taskIndex] = {
-        name: newTaskName,
-        time: new Date(newTaskTime).getTime(),
-      };
-      saveTasks();
-      displayTasks();
-      speakResponse(`Task updated to ${newTaskName}`);
-    }
-  } else {
-    speakResponse("Task not found.");
-  }
 }
 
 // Save tasks to local storage
